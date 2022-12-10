@@ -1,14 +1,16 @@
 const db = require('../libs/db');
 
 class CategoryDto {
-  constructor(name, upCatId = 0) {
+  constructor(tagId, name, upCatId = 0) {
+    this.tagId = tagId;
     this.name = name;
     this.upCatId = upCatId>0 ? upCatId : 0 ;
   }
 }
 
 class BlogDto {
-  constructor(title, imgLink, imgTitle, content, catId) {
+  constructor(tagId, title, imgLink, imgTitle, content, catId) {
+    this.tagId = tagId;
     this.title = title;
     this.imgLink = imgLink;
     this.imgTitle = imgTitle;
@@ -18,7 +20,8 @@ class BlogDto {
 }
 
 class PageDto {
-  constructor(name, link) {
+  constructor(tagId, name, link) {
+    this.tagId = tagId;
     this.name = name;
     this.link = link;
   }
@@ -38,10 +41,10 @@ class PageSectionDto {
 const categorySave = async (categoryDto) => {
 
   try {
-    const params = [categoryDto.name, categoryDto.upCatId];
+    const params = [categoryDto.tagId, categoryDto.name, categoryDto.upCatId];
     await db.any(
-          'insert into categories(cat_name, up_cat_id)' +
-          'values($1, $2 )',
+          'insert into categories(cat_tag_id, cat_name, up_cat_id)' +
+          'values($1, $2, $3)',
            params);
   } catch(err) {
     throw err;
@@ -53,7 +56,7 @@ const allCategories = async () => {
 
   try {
 
-    const categories = await db.any('select cat_id, cat_name, up_cat_id from categories order by up_cat_id desc ')
+    const categories = await db.any('select cat_id, cat_tag_id, cat_name, up_cat_id from categories order by up_cat_id desc ')
     console.log("Categories",categories)
     return categories;
   } catch(err) {
@@ -66,14 +69,15 @@ const blogSave = async (blogDto, userId, ip) => {
 
   try {
     const params = [
+                    blogDto.tagId,
                     blogDto.title, blogDto.imgLink,
                     blogDto.imgTitle, blogDto.content,
                     userId, blogDto.catId , ip
                   ];
     console.log(params);
     await db.any(
-          'insert into blogs(title, image_link, image_title, content, user_id, cat_id, ip_address )' +
-          'values($1, $2, $3, $4, $5, $6, $7)',
+          'insert into blogs(blog_tag_id, title, image_link, image_title, content, user_id, cat_id, ip_address )' +
+          'values($1, $2, $2, $3, $4, $5, $6, $7, $8)',
            params);
   } catch(err) {
     throw err;
@@ -81,10 +85,10 @@ const blogSave = async (blogDto, userId, ip) => {
 
 }
 
-const blogsWithId = async (catId) => {
+const blogsWithTagId = async (catTagId) => {
 
   try {
-    const blogs = await db.any('select id, title, image_link,image_title, content from blogs where cat_id = $1', [catId]);
+    const blogs = await db.any('select id, blog_tag_id, title, image_link,image_title, content from blogs where blog_tag_id = $1', [catTagId]);
     return blogs;
   } catch(err) {
     throw err;
@@ -92,16 +96,18 @@ const blogsWithId = async (catId) => {
 
 }
 
+
 const pageSave = async (pageDto, userId) => {
 
   try {
     const params = [
+                    pageDto.tagId,
                     pageDto.name, pageDto.link,
                     userId
                   ];
     const { id } = await db.one(
-                        'insert into pages(page_name, page_link, user_id)' +
-                        'values($1, $2, $3) RETURNING id',
+                        'insert into pages(page_tag_id, page_name, page_link, user_id)' +
+                        'values($1, $2, $3, $4) RETURNING id',
                   params);
     return id;
 
@@ -138,7 +144,7 @@ const pageSectionSave = async (pageSectionDto, userId, ipAddress) => {
 const getPagesAndSections = async () => {
 
   try {
-    const pages = await db.any('select id, page_name, page_link from pages order by id');
+    const pages = await db.any('select id, page_tag_id, page_name, page_link from pages order by id');
     const sections = await db.any('select section_id, page_id, title, image_link, image_title, content from page_sections order by page_id');
     return {
       pages,
@@ -159,7 +165,7 @@ module.exports = {
   categorySave,
   allCategories,
   blogSave,
-  blogsWithId,
+  blogsWithTagId,
   pageSave,
   pageSectionSave,
   getPagesAndSections

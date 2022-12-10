@@ -10,7 +10,7 @@ app.post('/save-page-section', checkToken, homeController.savePageSection);
 app.post('/save-blog', checkToken, homeController.saveBlog);
 app.post('/save-category', checkToken, homeController.saveCategory);
 
-app.get('/get-blogs/:cat_id', checkToken, homeController.getBlogsWithCatId);
+app.get('/get-blogs/:cat_tag_id', checkToken, homeController.getBlogsWithCatTagId);
 app.get('/get-pages-with-sections', checkToken, homeController.getPagesWithSections);
 app.get('/get-categories', checkToken, homeController.getCategories);
 

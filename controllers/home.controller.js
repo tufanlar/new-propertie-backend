@@ -1,7 +1,7 @@
 const {
   CategoryDto, BlogDto,
   categorySave, allCategories,
-  blogSave, blogsWithId,
+  blogSave, blogsWithTagId,
   PageDto, pageSave,
   PageSectionDto, pageSectionSave,
   getPagesAndSections } = require('../models/home.model');
@@ -9,8 +9,8 @@ const {
 
 async function saveCategory(req, res, next) {
   try {
-    const {cat_name, up_cat_id} = req.body;
-    await categorySave(new CategoryDto(cat_name, up_cat_id));
+    const {cat_tag_id, cat_name, up_cat_id} = req.body;
+    await categorySave(new CategoryDto(cat_tag_id, cat_name, up_cat_id));
     res.send({message:"Category successfuly created"});
   } catch(err) {
     return next(err);
@@ -30,10 +30,10 @@ async function getCategories(req, res, next) {
 async function saveBlog(req, res, next) {
 
   try {
-    const {title, image_link, image_title, content, cat_id } = req.body;
+    const {blog_tag_id, title, image_link, image_title, content, cat_id } = req.body;
     const {user_id, user_ip} = req;
     await blogSave(
-              new BlogDto (title, image_link, image_title, content, cat_id)
+              new BlogDto (blog_tag_id, title, image_link, image_title, content, cat_id)
               ,user_id, user_ip
             );
     res.send({message:"Blog successfuly saved"});
@@ -43,11 +43,11 @@ async function saveBlog(req, res, next) {
 
 }
 
-async function getBlogsWithCatId(req, res, next) {
+async function getBlogsWithCatTagId(req, res, next) {
 
   try {
-    const {cat_id} = req.params;
-    const blogs = await blogsWithId(cat_id);
+    const {cat_tag_id} = req.params;
+    const blogs = await blogsWithTagId(cat_tag_id);
     res.send({blogs});
   } catch(err) {
     return next(err);
@@ -58,9 +58,9 @@ async function getBlogsWithCatId(req, res, next) {
 async function savePage(req, res, next) {
 
   try {
-    const {page_name, page_link} = req.body;
+    const {page_tag_id, page_name, page_link} = req.body;
     const {user_id} = req;
-    const pageId = await pageSave(new PageDto(page_name, page_link), user_id);
+    const pageId = await pageSave(new PageDto(page_tag_id, page_name, page_link), user_id);
     res.send({message:"Page successfuly saved" , pageId});
   } catch(err) {
     return next(err);
@@ -105,7 +105,7 @@ module.exports = {
   savePageSection,
   saveBlog,
   saveCategory,
-  getBlogsWithCatId,
+  getBlogsWithCatTagId,
   getCategories,
   getPagesWithSections
 }
