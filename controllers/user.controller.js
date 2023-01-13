@@ -17,8 +17,9 @@ async function signup(req, res, next) {
     const {name_surname, e_mail, password} = req.body;
     const userDto = new UserDto(e_mail, password, name_surname);
     const user = await userSignup(userDto, ip);
-    const message = "User successfuly created!";
-    await sendMail(userDto.email, message, message);
+    const subject = `${name_surname} Your registration has successfuly received !`;
+    const message = `${subject}\n Mail address: ${e_mail} \n Password: ${password}`;
+    await sendMail(userDto.email, subject, message);
     res.send({message, user, token: createToken(user)});
   } catch(err) {
     return next(err);
@@ -30,8 +31,8 @@ async function forget(req, res, next) {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress  || 'ip alınamadı';
     const {e_mail} = req.body;
     const password = await getPassword(e_mail, ip);
-    const subject = "Password sended!";
-    const message = `Your password: ${password}`;
+    const subject = "Your password reseted!";
+    const message = `Your new password: ${password}`;
     await sendMail(e_mail, subject, message);
     res.send({message});
   } catch(err) {

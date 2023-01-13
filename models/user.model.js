@@ -83,7 +83,7 @@ const getPassword = async (email, ipAddress) => {
           'where user_mail = $1 RETURNING user_id',
            params);
            //
-    console.log("Sonuç", result);
+    // console.log("Sonuç", result);
     return password;
   } catch(err) {
     console.log("getPassword error", err);
