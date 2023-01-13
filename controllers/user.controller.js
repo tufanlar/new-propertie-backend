@@ -17,8 +17,8 @@ async function signup(req, res, next) {
     const {name_surname, e_mail, password} = req.body;
     const userDto = new UserDto(e_mail, password, name_surname);
     const user = await userSignup(userDto, ip);
-    const subject = `${name_surname} Your registration has successfuly received !`;
-    const message = `${subject}\n Mail address: ${e_mail} \n Password: ${password}`;
+    const subject = `${name_surname} Your registration has successfuly received!`;
+    const message = `${subject} Mail: ${e_mail} Password: ${password}`;
     await sendMail(userDto.email, subject, message);
     res.send({message, user, token: createToken(user)});
   } catch(err) {
