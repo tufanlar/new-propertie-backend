@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const db = require('../libs/db');
 
+
 class Role {
   constructor(id, name) {
     this.id = id;
@@ -48,8 +49,12 @@ const getUser = async (userDto) => {
 
   try {
     const params = [userDto.email];
+    const userInfo = await db.any('select user_id, user_name, user_password from users where user_mail=$1', params);
+    if (userInfo.length !== 1) {
+      throw new Error("Username or password wrong!");
+    }
+    const [{ user_id, user_name, user_password }] = userInfo;
 
-    const [{ user_id, user_name, user_password }] = await db.any('select user_id, user_name, user_password from users where user_mail=$1', params)
     if(!bcrypt.compareSync(userDto.password, user_password)) {
       throw new Error("Username or password wrong!")
     }
@@ -62,8 +67,38 @@ const getUser = async (userDto) => {
 }
 
 
+const getPassword = async (email, ipAddress) => {
+
+  try {
+    const generator = require('generate-password');
+    const password = generator.generate({
+	       length: 8,
+	        numbers: true
+    });
+    const salt = bcrypt.genSaltSync(10);
+    const secret = bcrypt.hashSync(password, salt);
+    const params = [email, secret, ipAddress];
+    const result = await db.one(
+          'update users SET user_mail = $1, user_password = $2, ip_address = $3 ' +
+          'where user_mail = $1 RETURNING user_id',
+           params);
+           //
+    console.log("Sonuç", result);
+    return password;
+  } catch(err) {
+    console.log("getPassword error", err);
+    throw err;
+  }
+
+}
+
+
+
+
+
 module.exports = {
   UserDto,
   userSignup,
-  getUser
+  getUser,
+  getPassword
 }
